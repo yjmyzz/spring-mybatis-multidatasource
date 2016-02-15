@@ -191,4 +191,4 @@ this project use gradle to build and deploy. you just need to input the followin
 
 when the application run complete. you can check the database: 
 
-![image](http://images2015.cnblogs.com/blog/27612/201602/27612-20160215182409407-1280090389.png =450x172)
+![image](http://7xo2ys.com1.z0.glb.clouddn.com/gitSnip20160215_3.png =450x172)

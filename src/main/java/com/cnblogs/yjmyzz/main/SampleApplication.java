@@ -1,5 +1,6 @@
 package com.cnblogs.yjmyzz.main;
 
+import com.cnblogs.yjmyzz.entity.OrderEntity;
 import com.cnblogs.yjmyzz.entity.UserEntity;
 import com.cnblogs.yjmyzz.service.UserService;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -26,6 +27,17 @@ public class SampleApplication {
             } else {
                 user = new UserEntity(i, "User-" + i);
                 service.addUser(user);
+            }
+        }
+
+
+        for (int i = 1; i < 5; i++) {
+            OrderEntity order = service.getOrder(i);
+            if (order != null) {
+                System.out.println(order);
+            } else {
+                order = new OrderEntity("NO-" + i);
+                service.addOrder(order);
             }
         }
 

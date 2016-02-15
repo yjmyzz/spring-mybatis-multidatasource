@@ -22,6 +22,7 @@
 
     <context:property-placeholder properties-ref="propertiesFactoryBean" ignore-unresolvable="true"/>
 
+
     <bean id="parentDataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init"
           destroy-method="close">
         <property name="driverClassName" value="${jdbc-driver}"/>
@@ -56,12 +57,19 @@
         <property name="password" value="${jdbc-password-2}"/>
     </bean>
 
-    <!-- config switch routing db -->
+    <bean id="dataSourceMain" parent="parentDataSource">
+        <property name="url" value="${jdbc-url-main}"/>
+        <property name="username" value="${jdbc-user-main}"/>
+        <property name="password" value="${jdbc-password-main}"/>
+    </bean>
+
+    <!-- method 1:  config switch routing db -->
     <bean id="dataSource" class="com.cnblogs.yjmyzz.utils.RoutingDataSource">
         <property name="targetDataSources">
             <map key-type="java.lang.String">
                 <entry key="${jdbc-key-1}" value-ref="dataSource1"/>
                 <entry key="${jdbc-key-2}" value-ref="dataSource2"/>
+                <entry key="${jdbc-key-main}" value-ref="dataSourceMain"/>
             </map>
         </property>
     </bean>
@@ -76,8 +84,25 @@
         </property>
     </bean>
 
-    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-        <property name="basePackage" value="com.cnblogs.yjmyzz.mapper"/>
+    <bean id="userScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.cnblogs.yjmyzz.mapper.user"/>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+    </bean>
+
+    <!-- method 2: config annotation auto switch-->
+    <bean id="sqlSessionFactoryMain" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="configLocation" value="classpath:mybatis-config.xml"></property>
+        <property name="dataSource" ref="dataSourceMain"/>
+        <property name="mapperLocations">
+            <array>
+                <value>classpath:mybatis/*.xml</value>
+            </array>
+        </property>
+    </bean>
+
+    <bean id="orderScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.cnblogs.yjmyzz.mapper.order"/>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactoryMain"/>
     </bean>
 
 </beans>

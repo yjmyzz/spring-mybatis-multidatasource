@@ -9,3 +9,4 @@ build/
 logs
 bin
 target
+src/mybatis-generator

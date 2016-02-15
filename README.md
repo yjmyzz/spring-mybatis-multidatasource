@@ -1,8 +1,8 @@
-### Spring - mybatis - multi - datasource sample
+## Spring - mybatis - multi - datasource sample
 
 This project illustrate how to use multiple datasource with mybatis and spring.
 
-
+---
 ##### prepare
 
 firstly, you must create table "T_USER" in two mysql databases: db_1 and db_2
@@ -12,6 +12,16 @@ CREATE TABLE T_USER
 (
     D_USER_ID INT(11) PRIMARY KEY NOT NULL,
     D_USER_NAME VARCHAR(100) DEFAULT ''
+);
+```
+
+and create table "T_ORDER"" in mysql database: db_main  
+
+```
+CREATE TABLE T_ORDER
+(
+    D_ORDER_ID INT(11) PRIMARY KEY NOT NULL,
+    D_ORDER_NO VARCHAR(50) DEFAULT ''
 );
 ```
 
@@ -29,6 +39,11 @@ jdbc-key-2=db_2
 jdbc-url-2=jdbc:mysql://default:3306/db_2?useUnicode=true&characterEncoding=utf8
 jdbc-user-2=test
 jdbc-password-2=123456
+
+jdbc-key-main=db_main
+jdbc-url-main=jdbc:mysql://default:3306/db_main?useUnicode=true&characterEncoding=utf8
+jdbc-user-main=test
+jdbc-password-main=123456
 ```
  
 
@@ -36,9 +51,8 @@ jdbc-password-2=123456
 **src/main/resources/spring-database.xml**  
 
 ```
-<?xml version="1.0" encoding="UTF-8"?>
-...
-
+    ...
+    
     <bean id="parentDataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init"
           destroy-method="close">
         <property name="driverClassName" value="${jdbc-driver}"/>
@@ -73,12 +87,19 @@ jdbc-password-2=123456
         <property name="password" value="${jdbc-password-2}"/>
     </bean>
 
-    <!-- config switch routing db -->
+    <bean id="dataSourceMain" parent="parentDataSource">
+        <property name="url" value="${jdbc-url-main}"/>
+        <property name="username" value="${jdbc-user-main}"/>
+        <property name="password" value="${jdbc-password-main}"/>
+    </bean>
+
+    <!-- method 1:  config switch routing db -->
     <bean id="dataSource" class="com.cnblogs.yjmyzz.utils.RoutingDataSource">
         <property name="targetDataSources">
             <map key-type="java.lang.String">
                 <entry key="${jdbc-key-1}" value-ref="dataSource1"/>
                 <entry key="${jdbc-key-2}" value-ref="dataSource2"/>
+                <entry key="${jdbc-key-main}" value-ref="dataSourceMain"/>
             </map>
         </property>
     </bean>
@@ -93,9 +114,28 @@ jdbc-password-2=123456
         </property>
     </bean>
 
- ...
+    <bean id="userScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.cnblogs.yjmyzz.mapper.user"/>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+    </bean>
 
-</beans>
+    <!-- method 2: config annotation auto switch-->
+    <bean id="sqlSessionFactoryMain" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="configLocation" value="classpath:mybatis-config.xml"></property>
+        <property name="dataSource" ref="dataSourceMain"/>
+        <property name="mapperLocations">
+            <array>
+                <value>classpath:mybatis/*.xml</value>
+            </array>
+        </property>
+    </bean>
+
+    <bean id="orderScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.cnblogs.yjmyzz.mapper.order"/>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactoryMain"/>
+    </bean>
+    ...
+    
 ```
 
 ##### key code:
@@ -148,23 +188,33 @@ public class RoutingDataSource extends AbstractRoutingDataSource {
 }
 
 ```
+**src/main/java/com/cnblogs/yjmyzz/mapper/order/OrderEntityMapper.java**  
+
+if you don't like switch db by coding manually , you can use annotation like this :  
+
+
+```
+/**
+ * auto switch to db_main by annotation
+ */
+@Resource(name = "orderScannerConfigurer")
+public interface OrderEntityMapper extends Mapper<OrderEntity> {
+}
+```
+
+
 **src/main/java/com/cnblogs/yjmyzz/service/impl/UserServiceImpl.java**
 
 ```
-package com.cnblogs.yjmyzz.service.impl;
-
-import com.cnblogs.yjmyzz.entity.UserEntity;
-import com.cnblogs.yjmyzz.mapper.UserEntityMapper;
-import com.cnblogs.yjmyzz.service.UserService;
-import com.cnblogs.yjmyzz.utils.DBContext;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service("userService")
 public class UserServiceImpl implements UserService {
 
     @Autowired
     UserEntityMapper userEntityMapper;
+
+    @Autowired
+    OrderEntityMapper orderEntityMapper;
 
 
     @Override
@@ -180,14 +230,29 @@ public class UserServiceImpl implements UserService {
         DBContext.setDBKey(DBContext.getDBKeyByUserId(userId));
         return userEntityMapper.selectByPrimaryKey(userId);
     }
-}
 
+    @Override
+    public void addOrder(OrderEntity orderEntity) {
+        //since orderEntityMapper can auto switch db by annotation
+        //so we don't need to switch db manually
+        orderEntityMapper.insertSelective(orderEntity);
+    }
+
+    @Override
+    public OrderEntity getOrder(int orderId) {
+        //since orderEntityMapper can auto switch db by annotation
+        //so we don't need to switch db manually
+        return orderEntityMapper.selectByPrimaryKey(orderId);
+    }
+
+}
 ```
+
 
 ##### build&run:
 this project use gradle to build and deploy. you just need to input the following command in terminal window: 
 
 ```gradle run```
 
-when the application run complete. you can check the database:
+when the application run complete. you can check the database.
 

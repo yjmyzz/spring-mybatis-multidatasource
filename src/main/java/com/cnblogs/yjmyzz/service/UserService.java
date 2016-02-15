@@ -1,5 +1,6 @@
 package com.cnblogs.yjmyzz.service;
 
+import com.cnblogs.yjmyzz.entity.OrderEntity;
 import com.cnblogs.yjmyzz.entity.UserEntity;
 
 /**
@@ -11,4 +12,8 @@ public interface UserService {
     void addUser(UserEntity userEntity);
 
     UserEntity getUser(int userId);
+
+    void addOrder(OrderEntity orderEntity);
+
+    OrderEntity getOrder(int orderId);
 }

@@ -1,7 +1,9 @@
 package com.cnblogs.yjmyzz.service.impl;
 
+import com.cnblogs.yjmyzz.entity.OrderEntity;
 import com.cnblogs.yjmyzz.entity.UserEntity;
-import com.cnblogs.yjmyzz.mapper.UserEntityMapper;
+import com.cnblogs.yjmyzz.mapper.order.OrderEntityMapper;
+import com.cnblogs.yjmyzz.mapper.user.UserEntityMapper;
 import com.cnblogs.yjmyzz.service.UserService;
 import com.cnblogs.yjmyzz.utils.DBContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     UserEntityMapper userEntityMapper;
 
+    @Autowired
+    OrderEntityMapper orderEntityMapper;
+
 
     @Override
     public void addUser(UserEntity userEntity) {
@@ -32,4 +37,19 @@ public class UserServiceImpl implements UserService {
         DBContext.setDBKey(DBContext.getDBKeyByUserId(userId));
         return userEntityMapper.selectByPrimaryKey(userId);
     }
+
+    @Override
+    public void addOrder(OrderEntity orderEntity) {
+        //since orderEntityMapper can auto switch db by annotation
+        //so we don't need to switch db manually
+        orderEntityMapper.insertSelective(orderEntity);
+    }
+
+    @Override
+    public OrderEntity getOrder(int orderId) {
+        //since orderEntityMapper can auto switch db by annotation
+        //so we don't need to switch db manually
+        return orderEntityMapper.selectByPrimaryKey(orderId);
+    }
+
 }

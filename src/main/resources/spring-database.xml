@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+
+    <context:annotation-config/>
+
+    <context:component-scan base-package="com.cnblogs.yjmyzz"/>
+
+    <bean id="propertiesFactoryBean"
+          class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="locations">
+            <list>
+                <value>classpath:properties/jdbc.properties</value>
+            </list>
+        </property>
+    </bean>
+
+    <context:property-placeholder properties-ref="propertiesFactoryBean" ignore-unresolvable="true"/>
+
+    <bean id="parentDataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init"
+          destroy-method="close">
+        <property name="driverClassName" value="${jdbc-driver}"/>
+        <property name="url" value="${jdbc-url-1}"/>
+        <property name="username" value="${jdbc-user-1}"/>
+        <property name="password" value="${jdbc-password-1}"/>
+        <property name="filters" value="stat"/>
+        <property name="maxActive" value="20"/>
+        <property name="initialSize" value="1"/>
+        <property name="maxWait" value="60000"/>
+        <property name="minIdle" value="1"/>
+        <property name="timeBetweenEvictionRunsMillis" value="3000"/>
+        <property name="minEvictableIdleTimeMillis" value="300000"/>
+        <property name="validationQuery" value="SELECT 'x'"/>
+        <property name="testWhileIdle" value="true"/>
+        <property name="testOnBorrow" value="false"/>
+        <property name="testOnReturn" value="false"/>
+        <property name="poolPreparedStatements" value="true"/>
+        <property name="maxPoolPreparedStatementPerConnectionSize" value="20"/>
+        <property name="connectionInitSqls" value="set names utf8mb4;"/>
+    </bean>
+
+    <bean id="dataSource1" parent="parentDataSource">
+        <property name="url" value="${jdbc-url-1}"/>
+        <property name="username" value="${jdbc-user-1}"/>
+        <property name="password" value="${jdbc-password-1}"/>
+    </bean>
+
+    <bean id="dataSource2" parent="parentDataSource">
+        <property name="url" value="${jdbc-url-2}"/>
+        <property name="username" value="${jdbc-user-2}"/>
+        <property name="password" value="${jdbc-password-2}"/>
+    </bean>
+
+    <!-- config switch routing db -->
+    <bean id="dataSource" class="com.cnblogs.yjmyzz.utils.RoutingDataSource">
+        <property name="targetDataSources">
+            <map key-type="java.lang.String">
+                <entry key="${jdbc-key-1}" value-ref="dataSource1"/>
+                <entry key="${jdbc-key-2}" value-ref="dataSource2"/>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="configLocation" value="classpath:mybatis-config.xml"></property>
+        <property name="dataSource" ref="dataSource"/>
+        <property name="mapperLocations">
+            <array>
+                <value>classpath:mybatis/*.xml</value>
+            </array>
+        </property>
+    </bean>
+
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.cnblogs.yjmyzz.mapper"/>
+    </bean>
+
+</beans>

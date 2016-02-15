@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+
+    <Appenders>
+        <Console name="STDOUT" target="SYSTEM_OUT">
+            <PatternLayout charset="UTF-8" pattern="%d{ABSOLUTE} &lt;%c&gt; %5p [%t]: %m%n"/>
+        </Console>
+
+        <Console name="STDERR" target="SYSTEM_ERR">
+            <PatternLayout charset="UTF-8" pattern="%d{ABSOLUTE} &lt;%c&gt; %5p [%t]: %m%n"/>
+        </Console>
+
+        <RollingRandomAccessFile name="SERVICE_LOG_FILE" fileName="logs/order/service.log"
+                                 filePattern="logs/$${date:yyyy-MM}/service-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout charset="UTF-8" pattern="%d{ABSOLUTE} &lt;%c&gt; %5p [%t]: %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+            <DefaultRolloverStrategy/>
+        </RollingRandomAccessFile>
+
+    </Appenders>
+
+    <Loggers>
+        <!-- Root Logger -->
+        <Root level="ERROR">
+            <AppenderRef ref="STDOUT"/>
+            <AppenderRef ref="SERVICE_LOG_FILE"/>
+        </Root>
+
+        <!-- HJM SOA Logger -->
+        <Logger name="com.cnblogs.yjmyzz" level="DEBUG" additivity="false">
+            <AppenderRef ref="STDOUT"/>
+            <AppenderRef ref="SERVICE_LOG_FILE"/>
+        </Logger>
+
+
+        <!-- MyBatis Logger -->
+        <Logger name="org.apache.ibatis" level="DEBUG" additivity="false">
+            <AppenderRef ref="STDERR"/>
+        </Logger>
+
+        <!-- JDBC Logger -->
+        <Logger name="java.sql" level="DEBUG" additivity="false">
+            <AppenderRef ref="STDERR"/>
+        </Logger>
+
+        <!-- - - - - - - - BEGIN: DAO LOGGERS - - - - - - - -->
+        <Logger name="com.cnblogs.yjmyzz.mapper" level="DEBUG" additivity="false">
+            <AppenderRef ref="STDOUT"/>
+            <AppenderRef ref="SERVICE_LOG_FILE"/>
+        </Logger>
+        <!-- - - - - - - - END: DAO LOGGERS - - - - - - - -->
+
+    </Loggers>
+</Configuration>

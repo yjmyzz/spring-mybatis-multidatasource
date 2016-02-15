@@ -189,6 +189,4 @@ this project use gradle to build and deploy. you just need to input the followin
 
 ```gradle run```
 
-when the application run complete. you can check the database: 
-
-![image](http://7xo2ys.com1.z0.glb.clouddn.com/gitSnip20160215_3.png =450x172)
+when the application run complete. you can check the database. 

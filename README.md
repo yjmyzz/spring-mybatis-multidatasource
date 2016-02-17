@@ -7,7 +7,7 @@ This project illustrate how to use multiple datasource with mybatis and spring.
 
 firstly, you must create table "T_USER" in two mysql databases: db_1 and db_2
 
-``` 
+```sql 
 CREATE TABLE T_USER
 (
     D_USER_ID INT(11) PRIMARY KEY NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE T_USER
 
 and create table "T_ORDER"" in mysql database: db_main  
 
-```
+```sql
 CREATE TABLE T_ORDER
 (
     D_ORDER_ID INT(11) PRIMARY KEY NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE T_ORDER
 
 and the jdbc properties(src/main/resources/properties/jdbc.properties) is follow:
 
-```
+```ini
 jdbc-driver=com.mysql.jdbc.Driver
 
 jdbc-key-1=db_1
@@ -50,7 +50,7 @@ jdbc-password-main=123456
 ###### key config:
 **src/main/resources/spring-database.xml**  
 
-```
+```xml
     ...
     
     <bean id="parentDataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init"
@@ -142,7 +142,7 @@ jdbc-password-main=123456
 **src/main/java/com/cnblogs/yjmyzz/utils/DBContext.java**  
 
 
-```
+```java
 package com.cnblogs.yjmyzz.utils;
 
 public class DBContext {
@@ -171,7 +171,7 @@ public class DBContext {
 **src/main/java/com/cnblogs/yjmyzz/utils/RoutingDataSource.java**  
 
 
-```
+```java
 package com.cnblogs.yjmyzz.utils;
 
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
@@ -193,7 +193,7 @@ public class RoutingDataSource extends AbstractRoutingDataSource {
 if you don't like switch db by coding manually , you can use annotation like this :  
 
 
-```
+```java
 /**
  * auto switch to db_main by annotation
  */
@@ -205,7 +205,7 @@ public interface OrderEntityMapper extends Mapper<OrderEntity> {
 
 **src/main/java/com/cnblogs/yjmyzz/service/impl/UserServiceImpl.java**
 
-```
+```java
 
 @Service("userService")
 public class UserServiceImpl implements UserService {
@@ -252,7 +252,9 @@ public class UserServiceImpl implements UserService {
 ##### build&run:
 this project use gradle to build and deploy. you just need to input the following command in terminal window: 
 
-```gradle run```
+``` 
+gradle run
+```
 
 
 when the application run complete. you can check the database.
